@@ -22,7 +22,7 @@ This project is a Face Recognition Attendance System built using Python, OpenCV,
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/IMApurbo/FaceRecognitionAttendanceSystem.git
-   cd face-recognition-attendance-system
+   cd FaceRecognitionAttendanceSystem
    ```
 
 2. **Install the required packages:**
@@ -128,4 +128,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Python](https://www.python.org/)
 
 ```
-
