@@ -11,16 +11,23 @@ KNOWN_FACES_DIR = 'known_faces'
 known_face_encodings = []
 known_face_names = []
 
+# Define a dictionary with person names and corresponding list of filenames
+face_names = {
+    'AKM Korishee Apurbo': ['apurbp.jpg', 'apurbo1.jpg'],
+    'Leonel Messi': ['messi.jpg', 'messi2.jpg'],
+    'Neymar Jr.': ['neymar.jpg'],
+    'Cristiano Ronaldo': ['ronaldo.jpg']
+    # Add more names and lists of filenames as needed
+}
+
 # Load known faces
-for filename in os.listdir(KNOWN_FACES_DIR):
-    if filename.endswith('.jpg') or filename.endswith('.png'):
+for name, filenames in face_names.items():
+    for filename in filenames:
         # Load the image file
         image_path = os.path.join(KNOWN_FACES_DIR, filename)
         image = face_recognition.load_image_file(image_path)
         # Encode the face
         face_encoding = face_recognition.face_encodings(image)[0]
-        # Get the name from the filename
-        name = os.path.splitext(filename)[0]
         # Append the encoding and name to the lists
         known_face_encodings.append(face_encoding)
         known_face_names.append(name)
@@ -61,7 +68,9 @@ with open('attendance.csv', 'a', newline='') as csvfile:
             # Draw a label with a name below the face
             cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
             font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+            fontScale = 0.5  # Adjust this value to change text size
+            fontThickness = 1  # Adjust this value to change text thickness
+            cv2.putText(frame, name, (left + 6, bottom - 6), font, fontScale, (255, 255, 255), fontThickness)
 
         # Display the resulting image
         cv2.imshow('Video', frame)
