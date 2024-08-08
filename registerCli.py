@@ -31,46 +31,60 @@ def get_next_photo_number(user_name):
 
 def capture_photo(user_name, actual_name):
     cap = cv2.VideoCapture(1)
-    face_detected = False
+    
+    if not cap.isOpened():
+        print("Error: Camera could not be opened.")
+        return
 
-    while not face_detected:
+    face_detection_count = 0
+    face_detection_stable = 5  # Number of stable frames required to confirm detection
+
+    print("Camera is open. Press Enter to capture a photo.")
+    while True:
         ret, frame = cap.read()
+        if not ret or frame is None:
+            print("Error: Unable to capture video frame.")
+            break
+
         rgb_frame = frame[:, :, ::-1]
         face_locations = face_recognition.face_locations(rgb_frame)
 
         if face_locations:
-            face_detected = True
-            top, right, bottom, left = face_locations[0]
-            cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-            cv2.putText(frame, "Face Detected! Taking photo in 3 seconds...", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+            face_detection_count += 1
+            if face_detection_count >= face_detection_stable:
+                # Display message for face detected but do not save this frame
+                temp_frame = frame.copy()
+                cv2.putText(temp_frame, "Face Detected! Press Enter to capture photo", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2, cv2.LINE_AA)
+                cv2.imshow('Register', temp_frame)
+        else:
+            face_detection_count = 0
+            cv2.putText(frame, "No face detected. Adjust your position.", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2, cv2.LINE_AA)
             cv2.imshow('Register', frame)
-            cv2.waitKey(1000)
 
-            for i in range(3, 0, -1):
-                ret, frame = cap.read()
-                top, right, bottom, left = face_locations[0]
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                cv2.putText(frame, f"Taking photo in {i}...", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                cv2.imshow('Register', frame)
-                cv2.waitKey(1000)
+        key = cv2.waitKey(1) & 0xFF
 
-            ret, clean_frame = cap.read()
-            photo_number = get_next_photo_number(user_name)
-            save_path = os.path.join(USER_IMAGES_DIR, f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg")
-            cv2.imwrite(save_path, clean_frame)
-            print(f"Photo saved as {save_path}")
+        if key == 13:  # Enter key
+            if face_detection_count >= face_detection_stable:
+                photo_number = get_next_photo_number(user_name)
+                save_path = os.path.join(USER_IMAGES_DIR, f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg")
+                cv2.imwrite(save_path, frame)  # Save the original frame without text
+                print(f"Photo saved as {save_path}")
 
-            if user_name in users_data:
-                users_data[user_name].append(f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg")
+                if user_name in users_data:
+                    users_data[user_name].append(f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg")
+                else:
+                    users_data[user_name] = [f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg"]
+
+                with open(USER_JSON_FILE, 'w') as f:
+                    json.dump(users_data, f, indent=4)
+                
+                # Return to the user action menu
+                break
             else:
-                users_data[user_name] = [f"{actual_name.replace(' ', '_').lower()}_{photo_number}.jpg"]
+                print("No face detected. Please make sure your face is visible.")
 
-            with open(USER_JSON_FILE, 'w') as f:
-                json.dump(users_data, f, indent=4)
-            break
-
-        cv2.imshow('Register', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        elif key == 27:  # Escape key to exit
+            print("Capture cancelled.")
             break
 
     cap.release()
@@ -81,6 +95,8 @@ def register_new_user():
     if actual_name:
         user_name = actual_name
         capture_photo(user_name, actual_name)
+        # After adding a new photo, return to the main menu
+        main()
 
 def select_existing_user():
     if not users_data:
