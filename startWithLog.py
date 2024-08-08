@@ -2,28 +2,32 @@ import cv2
 import face_recognition
 import os
 import csv
+import json
 from datetime import datetime
 
-# Path to the folder containing known faces
-KNOWN_FACES_DIR = 'known_faces'
+# Path to the folder containing known faces and the JSON file
+KNOWN_FACES_DIR = 'user_images'
+USER_JSON_FILE = os.path.join(KNOWN_FACES_DIR, 'users.json')
 
 # Initialize some variables
 known_face_encodings = []
 known_face_names = []
 
-# Define a dictionary with person names and corresponding list of filenames
-face_names = {
-    'Leonel Messi': ['messi.jpg', 'messi2.jpg'],
-    'Neymar Jr.': ['neymar.jpg'],
-    'Cristiano Ronaldo': ['ronaldo.jpg']
-    # Add more names and lists of filenames as needed
-}
+# Load the user data from the JSON file
+with open(USER_JSON_FILE, 'r') as f:
+    face_names = json.load(f)
 
 # Load known faces
 for name, filenames in face_names.items():
     for filename in filenames:
         # Load the image file
         image_path = os.path.join(KNOWN_FACES_DIR, filename)
+        
+        # Check if the file exists
+        if not os.path.isfile(image_path):
+            print(f"Warning: {image_path} does not exist. Skipping.")
+            continue
+        
         image = face_recognition.load_image_file(image_path)
         # Encode the face
         face_encodings = face_recognition.face_encodings(image)
@@ -35,6 +39,9 @@ for name, filenames in face_names.items():
         else:
             print(f"Warning: No faces found in {filename}")
 
+# Rest of the code remains the same...
+
+
 # Open a CSV file to store attendance records
 with open('attendance.csv', 'a', newline='') as csvfile:
     fieldnames = ['Name', 'Time']
@@ -42,7 +49,7 @@ with open('attendance.csv', 'a', newline='') as csvfile:
     writer.writeheader()
 
     # Initialize webcam
-    video_capture = cv2.VideoCapture(1)
+    video_capture = cv2.VideoCapture(1)  # Change the argument if your webcam index is different
 
     # Set to keep track of logged faces
     logged_faces = set()
@@ -91,9 +98,6 @@ with open('attendance.csv', 'a', newline='') as csvfile:
         # Hit 'q' on the keyboard to quit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-        # Clear the logged_faces set periodically if needed, e.g., every minute
-        # This is optional, depending on your specific requirements
 
     # Release handle to the webcam
     video_capture.release()
