@@ -55,25 +55,25 @@ with open('attendance.csv', 'a', newline='') as csvfile:
         face_locations = face_recognition.face_locations(frame)
         face_encodings = face_recognition.face_encodings(frame, face_locations)
 
-        print(f"Detected {len(face_encodings)} faces in the frame.")
-
         for face_encoding, face_location in zip(face_encodings, face_locations):
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             name = "Unknown"
 
-            print(f"Matches: {matches}")
-
+            # Check if a match was found in known_face_encodings
             if True in matches:
                 first_match_index = matches.index(True)
                 name = known_face_names[first_match_index]
 
-                if name not in logged_faces:
-                    # Log attendance
-                    now = datetime.now()
-                    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-                    writer.writerow({'Name': name, 'Time': current_time})
-                    logged_faces.add(name)
-                    print(f"Logged {name} at {current_time}")
+            # Print the detected name in the terminal
+            print(f"Detected: {name}")
+
+            # Log attendance if a known face is detected
+            if name != "Unknown" and name not in logged_faces:
+                now = datetime.now()
+                current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+                writer.writerow({'Name': name, 'Time': current_time})
+                logged_faces.add(name)
+                print(f"Logged {name} at {current_time}")
 
             # Draw a box around the face
             top, right, bottom, left = face_location
