@@ -13,7 +13,6 @@ known_face_names = []
 
 # Define a dictionary with person names and corresponding list of filenames
 face_names = {
-    'AKM Korishee Apurbo': ['apurbp.jpg', 'apurbo1.jpg'],
     'Leonel Messi': ['messi.jpg', 'messi2.jpg'],
     'Neymar Jr.': ['neymar.jpg'],
     'Cristiano Ronaldo': ['ronaldo.jpg']
