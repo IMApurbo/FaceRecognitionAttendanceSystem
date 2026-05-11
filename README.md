@@ -1,4 +1,3 @@
-```markdown
 # Face Recognition Attendance System
 
 This project is a Face Recognition Attendance System built using Python, OpenCV, and the `face_recognition` library. The system recognizes faces from a live video feed and logs attendance in a CSV file.
